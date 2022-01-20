@@ -78,12 +78,30 @@ public class InventoryTracker {
         System.out.println("Enter description of item:");
         response = inputScanner.nextLine();
         newItem.setDescription(response);
-        this.inventory.add(newItem);
-        System.out.println("The following was just added:");
-        System.out.println("NAME: " + newItem.getName());
-        System.out.println("QUANTITY: " + newItem.getQuantity());
-        System.out.println("DESCRIPTION: "+ newItem.getDescription());
 
+
+        boolean namesMatch = false;
+        boolean descriptionsMatch = false;
+
+        for(Item item: this.inventory){
+            namesMatch = newItem.getName().equalsIgnoreCase(item.getName());
+            descriptionsMatch = newItem.getDescription().equalsIgnoreCase(item.getDescription());
+            if(namesMatch && descriptionsMatch){
+                int presentQuantity = item.getQuantity();
+                item.setQuantity(presentQuantity + newItem.getQuantity());
+                System.out.println("The following was just updated:");
+                System.out.println("NAME: " + item.getName());
+                System.out.println("QUANTITY: " + item.getQuantity());
+                System.out.println("DESCRIPTION: " + item.getDescription());
+            }
+        }
+        if( !(namesMatch && descriptionsMatch)) {
+            this.inventory.add(newItem);
+            System.out.println("The following was just added:");
+            System.out.println("NAME: " + newItem.getName());
+            System.out.println("QUANTITY: " + newItem.getQuantity());
+            System.out.println("DESCRIPTION: " + newItem.getDescription());
+        }
     }
 
     public void removeItem(Scanner inputScanner){
@@ -92,14 +110,24 @@ public class InventoryTracker {
 
         } else {
             System.out.println("You choose to remove inventory items.");
-            int lineNumber = 1;
+            int lineNumber = 0;
             System.out.println("Below is the inventory:");
             for (Item inventoryItem : this.inventory) {
-                System.out.println(lineNumber + ". " + inventoryItem.getName());
                 lineNumber++;
+                System.out.println(lineNumber + ". " + inventoryItem.getName());
+
             }
+
             System.out.println("Please enter the number line to remove item: ");
             String response = inputScanner.nextLine();
+
+            int chosenIndex = Integer.parseInt(response) - 1;
+            while( ( chosenIndex < 0)  || (chosenIndex >= this.inventory.size()) ) {
+
+                System.out.println("Invalid response: Enter a number from 1 to " + lineNumber + ": ");
+                response = inputScanner.nextLine();
+                chosenIndex = Integer.parseInt(response) - 1;
+            }
             Item itemToRemove = this.inventory.remove(Integer.parseInt(response) - 1);
 
             System.out.println("The removed entry:");
@@ -115,16 +143,24 @@ public class InventoryTracker {
 
         } else{
             System.out.println("You choose to edit inventory items.");
-            int lineNumber = 1;
+            int lineNumber = 0;
             System.out.println("Below is the inventory:");
             for (Item inventoryItem : this.inventory) {
-                System.out.println(lineNumber + ". " + inventoryItem.getName());
                 lineNumber++;
+                System.out.println(lineNumber + ". " + inventoryItem.getName());
+
             }
             System.out.println("Please enter the number line to edit: ");
             String response = inputScanner.nextLine();
-            Item itemToEdit = this.inventory.get(Integer.parseInt(response) - 1);
+            int chosenIndex = Integer.parseInt(response) - 1;
+            while( ( chosenIndex < 0)  || (chosenIndex >= this.inventory.size()) ) {
 
+                System.out.println("Invalid response: Enter a number from 1 to " + lineNumber + ": ");
+                response = inputScanner.nextLine();
+                chosenIndex = Integer.parseInt(response) - 1;
+            }
+
+            Item itemToEdit = this.inventory.get(Integer.parseInt(response) - 1);
             response = "0";
             while (!(response).equals(MenuSelection.GO_BACK.choiceNum)) {
                 System.out.println("Please choose an option:");
@@ -168,10 +204,10 @@ public class InventoryTracker {
 
         } else {
             System.out.println("CREATING A SHIPMENT");
-            Shipment newShipment = new Shipment("SHIPMENT_" +this.shipments.size());
+            Shipment newShipment = new Shipment("SHIPMENT_" + this.shipments.size());
 
-            boolean keepGoing = true;
-            while(keepGoing) {
+            boolean keepAddingToShipment = true;
+            while(keepAddingToShipment) {
                 System.out.println("Below is the inventory:");
                 int lineNumber = 0;
                 for (Item inventoryItem : this.inventory) {
@@ -183,6 +219,7 @@ public class InventoryTracker {
                 String selection = inputScanner.nextLine();
                 int chosenIndex = Integer.parseInt(selection) - 1;
                 while( ( chosenIndex < 0)  || (chosenIndex >= this.inventory.size()) ) {
+
                     System.out.println("Invalid response: Enter a number from 1 to " + lineNumber + ": ");
                     selection = inputScanner.nextLine();
                     chosenIndex = Integer.parseInt(selection) - 1;
@@ -194,7 +231,7 @@ public class InventoryTracker {
                 int numToShip = Integer.parseInt(selection);
                 int remainder = itemToShip.getQuantity() - numToShip;
                 while(remainder < 0 ) {
-                    System.out.println("Invalid response: Enter a number from 1 to " + itemToShip.getQuantity() + ": ");
+                    System.out.println("Invalid response: Enter a number from 0 to " + itemToShip.getQuantity() + ": ");
                     selection = inputScanner.nextLine();
                     numToShip = Integer.parseInt(selection);
                     remainder = itemToShip.getQuantity() - numToShip;
@@ -202,9 +239,21 @@ public class InventoryTracker {
 
                 Item itemAddedOnShipment = new Item(itemToShip.getName(), numToShip);
                 itemAddedOnShipment.setDescription(itemToShip.getDescription());
-                newShipment.getItemList().add(itemAddedOnShipment);
-                this.shipments.add(newShipment);
-                itemToShip.setQuantity(remainder);
+                boolean namesMatch = false;
+                boolean descriptionsMatch = false;
+                for(Item item: newShipment.getItemList()){
+                    namesMatch = itemAddedOnShipment.getName().equalsIgnoreCase(item.getName());
+                    descriptionsMatch = itemAddedOnShipment.getDescription().equalsIgnoreCase(item.getDescription());
+                    if(namesMatch && descriptionsMatch){
+                        int presentQuantity = item.getQuantity();
+                        item.setQuantity(presentQuantity + numToShip);
+                    }
+                }
+                if( !(namesMatch && descriptionsMatch)){
+                    newShipment.getItemList().add(itemAddedOnShipment);
+                    this.shipments.add(newShipment);
+                    itemToShip.setQuantity(remainder);
+                }
 
                 selection = "0";
                 while( !selection.equals("1") && !selection.equals("2")) {
@@ -213,7 +262,7 @@ public class InventoryTracker {
                     System.out.println("2. Stop adding items to shipment.");
                     selection = inputScanner.nextLine();
                     if(selection.equals("2")){
-                        keepGoing = false;
+                        keepAddingToShipment = false;
                     }else {
                         System.out.println("You entered an invalid response.");
                     }
@@ -244,7 +293,7 @@ public class InventoryTracker {
         }
         int shipmentCounter = 1;
         for (Shipment shipment: this.shipments) {
-            System.out.println("SHIPMENT " + shipmentCounter + ": ");
+            System.out.println("SHIPMENT " + shipmentCounter + ": ---------------------------------");
             shipmentCounter++;
             int indexCounter = 1;
             for (Item item: shipment.getItemList()) {

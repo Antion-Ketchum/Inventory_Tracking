@@ -5,14 +5,11 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) {
-        //Loop here. Exit. option.
-        // SETUP DISPLAY
         System.out.println("INVENTORY TRACKER");
         InventoryTracker inventoryTracker = new InventoryTracker("Inventory_1");
         Scanner mainInputScanner = new Scanner(System.in);
         //MAIN MENU CHOICE
         String selection = "0";
-
         while(!(selection).equals(MenuSelection.EXIT_PROGRAM.choiceNum)) {
             System.out.println("------------------------------------------------------------------------");
             System.out.println("Please choose an option:");
